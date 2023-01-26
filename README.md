@@ -49,9 +49,14 @@ Obejct Item: Label (텍스트 색상 설정)
 
 **Stack View(텍스트 색상 버튼 모음)**
 
-Object Item: Button (노란색)
-Object Item: Button (자주색)
-Object Item: Button (초록색)
+Object Item: Button
+-> image(Assets) : yellow_circle
+
+Object Item: Button
+-> image(Assets) : purple_circle
+
+Object Item: Button
+-> image(Assets) : green_circle
 
 ---
 
@@ -65,9 +70,14 @@ Obejct Item: Label (배경 색상 설정)
 
 **Stack View(배경 색상 버튼 모음)**
 
-Object Item: Button (검정색)
-Object Item: Button (파랑색)
-Object Item: Button (주황색)
+Object Item: Button
+-> image(Assets) : black_circle
+
+Object Item: Button
+-> image(Assets) : blue_circle
+
+Object Item: Button
+-> image(Assets) : orange_circle
 
 ---
 
@@ -75,3 +85,109 @@ Object Item: Button (주황색)
 가운데 정렬
 - Center Horizontally -> Stack View(배경 색상)
 - Aling Top: 24
+
+
+---
+
+### 코드 구현
+
+먼저 설정 뷰의 SettingViewController에 오브젝트들을 연결 해주었고, 설정 값을 ViewController로 보내주기 위해 델리게이트를 생성하였다.
+
+``` swift
+SettingViewController.swift
+
+import UIKit
+
+// 설정 및 변경값(텍스트, 텍스트 색상, 배경 색상) 넘겨주는 델리게이트 생성
+protocol LEDBoardSettingDelegate: AnyObject {
+	func changedSetting(text: String?, textColor: UIColor, backgroundColor: UIColor)
+}
+
+class SettingViewController: UIViewController {
+	
+    // Text Field
+    @IBOutlet weak var textField: UITextField!
+    
+    // Text Colors
+    @IBOutlet weak var greenButton: UIButton!
+    @IBOutlet weak var purpleButton: UIButton!
+    @IBOutlet weak var yellowButton: UIButton!
+    
+    // Background Colors
+    @IBOutlet weak var blackButton: UIButton!
+    @IBOutlet weak var blueButton: UIButton!
+    @IBOutlet weak var orangeButton: UIButton!
+    
+    // 초기 세팅 값 지정
+    weak var delegate: LEDBoardSettingDelegate?
+    var ledText: String?
+    var textColor: UIColor = .yellow
+    var backgroundColor: UIColor = .black 
+```
+이후 초기 세팅 값 지정, 설정 뷰 저장값 유지 기능, 색상 버튼 선택 기능 및 처리, 저장 버튼 기능을 구현하였다.
+
+```swift
+	// 메모리 로드 호출 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // 설정 값 로드 
+        self.configureView()
+    }
+    
+	// 설정 값 초기화 방지 및 저장 기능 (설정 저장 후 LED 뷰에서 설정 뷰로 갔을 때 기존 값 유지)
+    private func configureView() {
+    	if let ledText = self.ledText {
+        	self.textField.text = ledText
+        }
+        self.changeTextColor(
+    
+    // 글자 색상 버튼 눌림 기능
+    @IBAction func tapTextColorButton(_ sender: UIButton) {
+		if sender == self.yellowButton {
+        	self.changeTextColor(color: .yellow)
+            self.textColor = .yellow
+        } else if sender == self.purpleButton {
+        	self.changeTextColor(color: .purple)
+        }
+    }
+            
+    // 배경 색상 버튼 눌림 기능
+    @IBAction func tpaBackgroundColorButton(_ sender: UIButton) {
+    	if sender == self.blackButton {
+        	self.changeBackgroundColorButton(color: .black)
+            self.backgroundColor = .black
+        } else if sender == self.blueButton {
+        	self.changeBackgroundColorButton(color: .blue)
+            self.backgroundColor = .blue
+        } else if sender == self.orangeButton {
+        	self.changeBackgroundColorButton(color: .orange)
+            self.backgroundColor = .orange
+        }
+    }
+    
+    // 글자 색상 버튼 활성화 처리 (삼항연산자 Alpha값 조정)
+    private func changeTextColor(color: UIColor) {
+        self.yellowButton.alpha = color == UIColor.yellow ? 1 : 0.2
+        self.purpleButton.alpha = color == UIColor.purple ? 1 : 0.2
+        self.greenButton.alpha = color == UIColor.green ? 1 : 0.2
+    }
+    
+    // 배경 색상 버튼 활성화 처리 (삼항연산자 Alpha값 조정)
+    private func changeBackgroundColorButton(color: UIColor){
+        self.blackButton.alpha = color == UIColor.black ? 1 : 0.2
+        self.blueButton.alpha = color == UIColor.blue ? 1 : 0.2
+        self.orangeButton.alpha = color == UIColor.orange ? 1 : 0.2
+    }
+    
+    // 저장 버튼 기능 (저장 및 색상 보내기)
+    @IBAction func tapSaveButton(_ sender: UIButton) {
+    	self.delegate?.changedSetting(
+        	text: textField.text,
+            textColor: textColor,
+            backgroundColor: backgroundColor
+        )
+        // 이전 뷰로 이동
+        self.navigationController?.popViewController(animated: true)
+    }
+}
+```
